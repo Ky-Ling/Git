@@ -1,0 +1,375 @@
+Venus
+
+1: Working with Branches:
+    Let's say we got a bug report, in order to fix this bug, we need to create a new branch called bugfix
+    (1): git branch bugfix
+    (2): git branch
+        --> To see the list of branches. From the result, we can see there is "*" before "master", that means currently we are 
+            on the master branch.
+    (3): git status
+        --> There is another way to see which branch we are.
+    (4): git switch bugfix
+        --> In order to fix this bug, we need to change the branch from master to bugfix
+    (5): git branch -m bugfix bugfix/signup-form 
+        --> Before we move forward, we wanna rename this branch name, because it is not clear what bug we are trying to solve.
+    (6): code audience.txt
+        --> To make some changes. Change "AUDIENCE" to "WHO THIS COURSE IS FOR", then add a border. Finally delete the last line.
+            So we have three kinds of changes here: addition, modification and deletion.
+    (7): git status
+    (8): git add .
+        --> Add it to the staging area.
+    (9): git commit -m "Fix the bug that prevented the user from the signing up."
+    (10): git log --oneline
+        --> On the top of the result, HEAD points the bugfix/signup-form branch, that means currently we are on this branch.
+            As we can see, the master branch is one commit behind the bugfix branch.
+    (11): git switch master
+        --> Switch the branch to the maser branch
+    (12): git branch -d bugfix/signup-form
+        --> But from the result, we will get an error, that means we have some changes in the bugfix branch, but are not merge 
+        with the master branch. So by default, the git prevents us from accidentally deleting this branch unless we merge first.
+        But if we really wanna delete this branch, we can use the "D" to force the git to delete this branch. -->
+        git branch -D bugfix/signup-form
+
+
+2: Comparing Branches:
+    As we are coming to the Branches, we need to know how their diversion from master. At some point of future, we will merge the 
+    bugfix branch into master, but before doing so, we wanna know what commands are coming in master:
+    (1): git log master..bugfix/signup-form
+        This is means show me all the commands.
+    (2): git diff master..bugfix/signup-form
+        --> We will compare the bugfix with the master branch. There is another way:
+    (3): git diff bugfix/signup-form
+        --> This shows the difference between the bugfix and the current branch which is master.
+    (4): git diff --name-only bugfix/signup-form
+         git diff --name-status bugfix/signup-form
+        --> Sometimes we do not wanna see the changes in terms of the code, we just wanna know what files are going to be effected.
+
+
+3: Stashing:
+    When we switch branches, git will reset our working directory to the snapshot stored in the last commit of the target branch,
+    if we have local changes in our working directory that we have not committed yet, these changes could get lost. In this 
+    situations, git does not allow us to switch branches.
+    (1): code audience.txt
+        --> To make some changes. Add "*" before the "AUDIENCE". And when we back to the terminal, we have to know that we have
+            some local changes we have not committed yet. And in this case, we wanna switch branches.
+    (2): git switch bugfix/signup-form
+        --> We will get an error. And in this case we do not wanna commit the changes, because we are not done yet. So in 
+            situation like this, we should stash our changes. Stashing something means storing it in a safe place, and this are
+            not going to be the history.
+    (3): git stash push -m "New tax rules. "
+        --> And from the result, we have one stash. We have to remember that by default new untracked files are not included in
+            our stash. Here is an example:
+    (4): echo hello > newfile.txt
+    (5): git status -s
+        --> The new untracked files are not included in the stash by default, to include it, we have to use the "--all" option
+    (6): git stash push --all -m "My new stash."
+        --> From the result, we have two stashes here.
+    (7): git stash list
+        --> To view our stashes.
+    (8): git switch bugfix/signup-form
+        --> From now on, we can switch our branches. And then we can do some work. Finally, we have to go back to master.
+    (9): git switch master
+    
+    At this point, we wanna apply the changes from one of our stashes to working directory. But before doing so, we 
+        wanna look at these changes to see what lines of code have been modified.
+    (10): git stash show stash@{1}
+    (11): git stash apply stash@{1}
+        --> So we can go ahead and apply the changes to our working directory.
+    (12): git stash drop stash@{1}
+        --> And when we done this, we wanna remove it to clear things up.
+    (13): git stash list
+        --> We still have one more stash.
+    (14): git stash clear
+        --> To clear all the stashes.
+
+
+
+4: Merging:
+    Merging is all about bringing changes from one branch to another, there are two types of merges: fast-forward merges(if 
+    branches have not diverged) and 3-way merges(if branches have diverged). 
+    
+
+5: Fast-forward Merges:
+    (1): git log --oneline --all --graph
+        --> The graph potion will give us better representation of our branches and how they diverge. But this time we won't 
+            see any difference. And from the result, we can see that the bugfix branch is one commit ahead of master. And we
+            have linear path here, so if we start from bugfix, we can get the master. So master has not diverge from bugfix.
+            That means when we run a merge, git will fast forward our master.
+    (2): git merge bugfix/signup-form
+        --> Bring the changes from the bugfix into master
+    (3): git log --oneline --all --graph
+        --> Look at our history one more time. From the result we can see both the branches are pointing to the same commit.
+    
+    It is possible to disable a fast forward merge and this has a number of benefits, so let's say create a new box branch,
+    make commit to it, and then merge it to the master, using a no fast forward option.
+    (4): git switch -C bugfix/login-form
+        --> "C" means create, This shortcut means we create and switch the branch in one step.
+    (5): code toc.txt 
+        --> Add "*" before the first line.
+    (6): git add .
+    (7): git commit -m "Update the toc.txt"
+    (8): git log --oneline --all --graph
+        --> From the result, our new branch is one commit ahead the master. So in this case, we wanna merge the new branch to 
+            the master using no fast forward option.
+    (9): git switch master
+        --> First we have to switch the master.
+    (10): git merge --no-ff bugfix/login-form
+        --> This command means even if fast forward is possible, do not do it, create a merge commit that combines all the changes  
+            in this target branch and bring them into master.
+    (11): git log --oneline --all --graph
+        --> Look at the bugfix/login-form branch, which originated from this commit(bugfix/signup-form). So before we merge the 
+        login-form to the master, master is pointing to this commit(signup-form), and this is where we create a new box branch.
+        And this branch is added to the commit(Update the toc.txt), then we merge this branch to the master. So we can see the 
+        pointer is pointing to master and we can see the message. 
+        
+        What is the benefit of disable fast forward merges?
+
+    (12): git config ff no
+        This will disable the fast forward merge only in the current repository.
+    (13): git config --global ff no
+        --> Apply this command to all the repositories.
+
+
+
+6: 3-way merges:
+    (1): git log --oneline --all --graph
+    (2): git switch -C feature/change-password
+        --> Create a new branch to implementing new feature
+    (3): git log --oneline --all --graph
+        --> At this point, feature and master are pointing the same commit.
+    (4): echo hello > change-password.txt
+        --> How two branches can diverge? And this time we are on the feature branch.
+    (5): git add .
+    (6): git commit -m "Build the change password form."
+    (7): git log --oneline --all --graph
+        --> The feature branch is one commit ahead the master. But our branches have not diverged yet, because there is a direct
+            linear path from the change-password branch to master. So to make these branches diverged, we have to go back to master
+            and make commit.
+    (8): git switch master
+    (9): code objectives.txt
+        --> Add "*" before the first line of code.
+    (10): git add .
+    (11): git commit -m "Update objectives.txt"
+        --> So new both the master and change-password branches have a new commit.
+    (12): git log --oneline --all --graph
+        --> As we can see, our branches have diverged, and we do not have direct linear path from change-password to master.
+            Base on the differences, it will figure out how to merge or combine the changes into a new merge commit.
+    (13): git merge feature/change-password
+    (14): git log --oneline --all --graph
+
+
+7: Viewing the Merged Branches:
+    How to review the list of merge and unmerged branches?
+    (1): git branch --merged
+        --> currently we are on the master branch, to view the list of branches that we have merged into the current branch 
+            which is master this time.
+    (2): git branch -d bugfix/login-form
+    (3): git branch --no-merged
+
+
+8: Merge Conflicts:
+    (1): git switch -C bugfix/change-password
+    (2): code change-password.txt
+        --> Add a new line in the end: "Change in the bugfix branch."
+    (3): git add .
+    (4): git commit -m "Update the change-password.txt"
+    (5): git switch master
+    (6): code change-password.txt
+        --> Make some changes in the same file in different way. Add a new line in the end: "Change in the master branch."
+    (7): git add .
+    (8): git commit -m "Update the change-password.txt"
+        --> So new this file is changed in different ways across these two branches.
+    (9): git merge bugfix/change-password
+        --> From the result, we can get a conflict, so git will stop the merge process.
+    (10): git status
+
+    What we should do when we get a conflict?
+    (11): code change-password.txt
+        --> From the result, we have several options to choose. And we can manually change this file(such as delete the head
+        marks and dividers, and as much as possible, we would better not introduce new changes.)
+    (12): git add change-password.txt
+        --> Add this file to the staging area, because this is what we are proposing for the next commit.
+    (13): git status
+        --> We no longer have conflicts.
+    (14): git commit
+       
+
+
+9: Aborting a Merge:
+    Perhaps we have several conflict and we are in the middle of something, so we do not have enough time to spend on resolving 
+    this conflict, so in situation like this, we can easily go back to the state before we started the merge.
+    (1): git merge bugfix/change-password
+    (2): git merge --abort
+        --> New we are back to the state before we start this merge.
+
+
+10: Undoing a Faulty Merge:
+    Sometimes we do a merge and we find that our code does not get complied or application does not work, that happens when if
+    you scroll the merge, if you do not combine the changes properly, in situation like this, we have to undo the merge and the 
+    remerge.
+    (1): git log --oneline --all --graph
+        --> On the top, We have the merge commit (the last commit), let's say this is a faulty merge, so we will undo it, here 
+            we have two options. One option is to remove this commit as if it was never there, but we may rewrite the history,
+            so we should be careful. Another approach is we are going to create a new commit that will cancel all the changes 
+            in this commit.
+    (2): git reset --hard HEAD~1
+        --> When we resetting the pointer, we have three options: soft, mixed and hard.
+        <1>: When we reset the head using "soft", git is going to have the head pointer point to the different snapshot, but our
+            staging area and working directory are not effected.
+        <2>: When we use the mixed option which is the default option, git is going to get that new snapshot and put it in the 
+            staging area as well. So if our local changes are in working directory, they are not effected.
+        <3>: If we use the hard option, git is going to take that snapshot and putting it in the working directory as well.
+
+        So we are going to reset the head to the last commit on the master branch before we start the merge. Before we doing so,
+        i wanna take a copy of the last commit id.
+
+    (3): git reset --hard HEAD~1 
+    (4): git log --oneline --all --graph
+        --> The merge commit is no longer in the history, but it is still in the repository, and we can recover it.
+    (5): git reset --hard f634b2a
+        --> The id we copied before.    
+    (6): git log --oneline --all --graph
+    
+    We should do this approach only if we do not have to share history with others. But if we have to share the history with other,
+    we have to revert the last commit.
+
+
+    (7): git revert HEAD
+        --> We will get an error.
+    (8): git revert -m 1 HEAD
+        --> "1" means the first parent.
+    (9): git log --oneline --all --graph
+
+
+11: Squash Merging: 
+    Create a new commit that combines all the changes in the bugfix branch, so we have a single logical chain set that represents
+    all the changes for fixing this bug. New we can apply this commit on top of master, so this is what we call Squash merging.
+    And we have to know that this commit is not a merge commit.
+
+    (1): git switch -C bugfix/photo-upload
+
+    In this branch we are going to make two commits, and in each commit we are going to update one file.
+    (2): echo bugfix >> audience.txt
+    (3): git commit -am "Update audience.txt"
+    (4): echo bugfix >> toc.txt
+    (5): git commit -am "Update toc.txt"
+    (6): git log --oneline --all --graph
+        --> Our bugfix branch is two commits ahead of our master branch.
+    (7): git switch master
+    (8): git merge --squash bugfix/photo-upload
+        --> Git will create a new commit called Squash commit, which combines all the changes across these two files, but we 
+            do not commit yet, all these changes are just in the staging area.
+    (9): git status -s
+    (10): git commit -m "Fix the bug on the photo upload page."
+    (11): git log --oneline --all --graph 
+        --> So in the master branch, we have a new commit that combine all the changes for fixing this bug.
+    (12): git branch --merged
+        --> From the result, we can know that the photo-upload file is not in this list. Because technically, we do not have a
+            merge commit that connects these branches, so when doing a squash merge, it is super important to move our target
+            branch, otherwise, that branch will be setting there, and may create confusion in the future.
+
+    (13): git branch -D bugfix/photo-upload
+    (14): git log --oneline --all --graph
+        --> So we have simple linear history, we have a single commit that combine all the changes for fixing this bug.
+
+
+12: Rebasing:
+    Bring changes from one branch to another. We go back to the state before we do a merge, look at the base of the future
+    branch, using the rebasing command, we can changes the base of the future branch, we can base it on the latest commit on
+    master. So we have a direct linear path from future to master. So if we wanna do a merge from future branch into master,
+    we can do a fast forward merge, and now we have a linear history.
+
+    But we have to notice that rebasing rewrites history, that means we should use rebasing only for branches or commands 
+    of our local in our repository.
+
+    (1): git switch -C feature/shopping-cart
+    (2): echo hello > cart.txt
+    (3): git add .
+    (4): git commit -m "Add cart.txt"
+    (5): git log --oneline --all --graph
+        --> So our shopping cart branch is one commit ahead the master. So if we do a merge, git will do a fast forward merge.
+    (6): git switch master
+    (7): echo hello >> toc.txt
+    (8): git commit -am "Update toc.txt"
+    (9): git log --oneline --all --graph
+        --> Our branches have diverged.
+
+    We wanna change the base from this commit (fix the bug on photo....) to the last commit on master(update toc.txt).
+    (10): git switch feature/shopping-cart
+    (11): git rebase master
+        --> We are telling git to changes the base of this branch to the last commit on master.
+    (12): git log --oneline --all --graph
+        --> Our branch have no longer diverged, we have a direct linear path from the feature branch onto the master. So if we 
+            wanna do a merge, git will do a fast forward merge to bring the master pointer upward.
+    (13): git switch master
+    (14): git merge feature/shopping-cart
+        --> Look, we have a fast forward merge.
+    (15): git log --oneline --all --graph
+        --> Both our branches are pointing to the same commit and we have a simple clean history.
+
+    What if we have a conflict?
+    (16): echo ocean > toc.txt
+    (17): git commit -am "Update the toc.txt"
+    (18): git switch feature/shopping-cart
+    (19): echo mountain > toc.txt
+    (20): git commit -am "Write mountain to the toc.txt"
+    (21): git log --oneline --all --graph
+        --> Our branches are diverged one more time. We have these two new commits, and we have the base commit(Add cart.txt).
+
+    (22): git switch feature/shopping-cart
+    (23): git rebase master
+        --> We have a conflict in this file. So we have to solve this conflict like before.
+    (24): code toc.txt
+    (25): git rebase --continue
+        --> To tell git to apply the next commit on top of the master. We also have another option (git rebase --skip), this 
+            will skip the current commit and move on to the next commit. The third option (git rebase --abort), this is used
+            in situation where we have so many commit are applied on the top of master, perhaps our branches are diverged for
+            a long time, in that case, if you do not have enough time for resolving all these conflicts and going through a
+            complex rebase, we can abort the rebase here.
+
+            So it will take me back to the previous state before we started rebasing.
+
+    (26): git status
+    (27): cat toc.txt.orig
+        --> Look at the content of this file. So this is our table of content file before we resolve the conflict, we do not
+        wanna this file in our repository.
+    (28): git clean -fd
+        --> Or we can use the rm command.
+
+
+
+13: Cherry Picking
+    We will learn how to cherry pick a particular commit from another branch and apply it to the current branch.
+    (1): git log --oneline --all --graph
+        --> Our feature branch is one commit ahead of the master. New we are going to bring the last commit into master without
+            merging.
+    (2): git cherry-pick 5670ecc
+        --> We will get an error in toc.txt
+    (3): code toc.txt
+        --> We will pick the remote 
+    (4): git status -s
+        --> So the toc.txt has some changes in the staging area
+    (5): git commit
+        --> The default message we have here is base on the commit that you were trying to cherry pick, so we can accept it or
+            change it if necessary
+    (6): git log --oneline --all --graph
+        --> Master has moved forward, and we have the new commit that cherried pick from the feature branch.
+
+
+14: Picking Files from Another Branch:
+    (1): git switch -C feature/send-email
+    (2): echo river > toc.txt
+    (3): git commit -am "Update toc.txt"
+
+    Let's say we wanna bring this table of content file to our master branch.
+    (4): git switch master
+    (5): git restore --source=feature/send-email -- toc.txt
+        --> Git is going to restore out table of this content file, not working directory, from the latest version of this file
+            stored in this branch. 
+    (6): git status -s
+        --> So we have some local changes in this file
+    (7): cat toc.txt
+        --> View the content of this file. So this is the changes we apply in our feature branch, now we can stage the changes
+            and commit it in the current branch
+
+    

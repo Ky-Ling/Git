@@ -1,0 +1,325 @@
+1: Tools: --> To produce clean, readable and meaningful history
+    Squash small¡¢related commits
+    Split large commits
+    Reword commit messages
+    Drop unwanted commits
+    Modify commits
+
+2: The Golden Rule of Rewriting History
+    Don't rewrite public history
+
+3: Undoing commits
+    (1): git log --oneline --all --graph
+        --> From the result, we can know that the last commit is useless and we wanna undo it.
+        (2): git revert HEAD
+            --> It will create a new commit that will undo all the changes in this commit. We do not push this commit and it only
+                exists in our local repository
+        
+    (2): git show HEAD
+    (3): git reset --soft HEAD~1
+        --> We have some changes in the staging area
+    
+    (4): git status -s
+
+    (5): git diff --cached
+        --> We can see the changes in the staging area
+    (6): git log --oneline --all --graph
+        --> Our last commit has gone
+    (7): git reset HEAD
+    (8): git status -s
+        --> New we have some changes in the working directory
+    (9): git diff 
+        --> Compare the working directory with staging area using diff
+    (10): git reset --hard HEAD
+        --> Our local changes have gone and we have a clean working directory
+
+
+4: Reverting commits
+    (1): git revert HEAD~3..HEAD 
+        --> Revert the last three commits one by one
+    (2): git log --oneline --all --graph
+        --> We have three revert commits
+    
+    From the result, we can it is so ugly, we can have a better way todo that
+    (3): git reset --hard HEAD~3
+    (4): git log --oneline --all --graph
+    (5): git revert --no-commit HEAD~3..HEAD
+        --> Git will simply add the required changes in the staging area
+            Git will remove the term.txt, and we have some changes in the staging area
+    (6): git status -s
+        --> Git revert all the changes across the last three commits
+    (7): git revert --continue
+        --> Change the content (remove the first two line of code and add a new one: Revert bad code)
+    (8): git log --oneline --all --graph
+        --> We can see the last commit and new we can push it to the origin and share with others.
+
+5: Recovering Last Commits
+    (1): git reset --hard HEAD~6
+    (2): git log --oneline --all --graph
+        --> From the result, we may think we have lost our commits. But in git, all the information about a project history,
+            all the commits we have created, all of these objects are stored in the repository, even if we do not see them 
+            by looking at the history
+
+    So how can we recover the lost commits?
+    (3): git reflog
+        --> So to recover the lost commits, we can reset the HEAD back to its location(We can use the commit id the unique
+            identifier on the entry)
+    (4): git reset --hard HEAD@{1}
+        --> New we are heading to the previous location
+    (5): git log --oneline --all --graph
+        --> All our commits are coming back
+    (6): git reflog show feature 
+        --> Show the history of the feature pointer
+
+
+
+6: Amending the Last Commit
+    There are lot of cases where we make a commit and then we realize that we made a mistake, in this situation, we do not need to 
+        make a another commit, we can amend or modify our last commit
+    (1): echo cafes >> map.txt
+    (2): git commit -am "Render cafes on the map"
+    (3): code map.txt
+        --> Add "blue" to the last line 
+    (4): git add .
+    (5): git commit --amend
+        --> Our last commit is amended. But we have to know that we did not modify the last commit, because commits and git are 
+            immutable, so even though on the surface, we amended the last commit, git actually created a new commit:
+    (6): git log --online
+        --> We can see the last commit
+    (7): git show HEAD
+        --> See the details about this commit
+
+    Here is another example, let's say we forget to include a file in the last commit, how can we do that?
+    (8): echo hello > file1.txt
+    (9): git add .
+    (10): git commit --amend
+    (11): git log --oneline
+        --> We can see the last commit, and we did not add an additional commit
+    (12): git show HEAD
+        --> Look at the content of the last commit, so here we have two changes 
+    
+    Let's say we have accidentally included the file1.txt in the last commit, how can we remove it?
+    (13): git reset --mixed HEAD~1 
+        --> With the mixed option, git is going to unstage all changes, but all of the changes are going to stay in our working 
+        directory
+    (14): git status -s
+        --> We have some modifications to map.txt and a new untracked file
+    (15): git clean -fd
+        --> With this command we can remove the untracked files in our working directory. We do not wanna keep file1.txt, and 
+            we are left with changes in the map.txt
+    (16): git add .
+    (17): git commit -m "Render cafes on the map."
+
+
+
+7: Amending an Earlier Commits:
+    How can we amend the earlier commits?
+    (1): git log --oneline 
+        --> Look at this commit (8441b05)
+    (2): git show 8441b05
+        --> So in this commit, we added a line to package.txt
+    
+    Let's say we forget to include the license for Google map, so we wanna go back to history and amend this commit.
+    (3): git log --online
+        --> So to edit this commit(8441b05), we are going to use the interactive rebasing. With rebasing, we can replay a 
+            bunch of commits on top of another commit, so here we can replay this commit and all the future commits on top of
+            the parent of this commit(8527033)
+    (4): git rebase -i 8527033
+        --> "i" stands for interactive, this basically means that we are going to interact with the rebase operation, so we are
+            going to stop it, make changes and then continue
+        --> We will get a script, it contains a series of instructions about the rebase operation, and we have all the commits
+            we are going to replay and a list from the oldest and newest
+
+        --> We are going to change the "pick" to "edit" of this commit(8441b05). But we have to notice that in this demo, even 
+            though we edited only a single commit, all the commits comes after this commit are also be edited or recreated.
+
+        So rebasing is a destructive operation, because it rewrites the history. So we should do this command only for commits 
+            that we have not shared with others.
+
+        So when we close this VSCode window, the rebase operation will start.
+
+        Back to the terminal, from the result so new we have a chance to amend this commit, so we are going to make necessary 
+        changes, then we are going to amend this commit and then continue with the rebase operation
+    (5): echo license > license.txt
+    (6): git add .
+    (7): git commit --amend
+        --> Accept the default messages
+    (8): git log --oneline --all --graph
+        --> New we have two branches, and in this branch we have all the commit that we might have to replay. And we can see 
+            the first commit (8441b05) is to commit and that we want to add it, we modify this commit and git create another 
+            commit with the same message here(HEAD). The rebase operation stopped. So once we continue rebasing, all The
+            subsequent commits will be replayed on the top of this new commit(HEAD), and then this branch will be discarded. 
+
+    (9): git rebase --continue
+        --> We can also abort the rebase operation(git rebase --abort) and go back to the previous state before we start the 
+            rebase
+    (10): git log --oneline --all --graph
+        --> We have a simple clear history. And if we pay close attention, we probably notice that the commit ids are different.
+
+    Copy the new id of the commit (Add a reference to Google Map SDK) that we changed 
+    (11): git show 278e318
+        --> So in this commit we have two changes, we introduced a new file and add a line to package.txt
+    
+    (12): git log --oneline --all --graph
+        --> So we have added a license in this commit (278e318), what if we wanna check out the commit that was introduced later(Let's 
+            say the first "WIP"), if we check this out, we will see that our license file still there, even though it was not in the 
+            origin working progress commit
+    (13): git checkout deb3501
+        --> The HEAD pointer is detached 
+    (14): ls
+        --> we can see the license.txt that we added 
+
+    So how can we take away this license file? The changes that we introduced is one of the earlier commits carried off throughout
+        the rest of the history
+    (15): git checkout master
+
+
+
+8: Dropping a Commit:
+    Let's say we wanna drop the second "WIP"
+    (1): git log --oneline
+    (2): git show 6cbd931
+        --> Look at the content of this commit: in this commit, we introduced a new file called terms.txt, and in this file 
+            we added a new line
+    (3): git show 4033249
+        --> Look at the next commit of the second "WIP" - "Update terms of service ..."
+            Here we have two changes, we Updated the package.txt and had changes in the term.txt
+    (4): git log --oneline
+
+    What will happen if we drop the second "WIP"? We are going to end up with a conflict. By dropping this commit, we are 
+    essentially saying we never introduce this change, so we never introduced a file called terms.txt. New in contrast, the 
+    next commit have some updates for terms.txt, so git will not be able to replay all this commits, it is going to confused.
+    This is where we need to jump in, resolve the conflict and then continue the rebase operation.
+
+    So we should start a rebase operation with the parent of this second "WIP"
+    (5): git rebase -i 6cbd931~1
+        --> We can change the "pick" to "drop" or we can just delete this line. 
+
+    Back to the terminal, we will get a conflict.
+    (6): git status -s
+        --> We have some changes in the staging area - we have a update to package.txt and we have some local changes that 
+            are not staged(On the one hand, we are trying to delete this file, on the other hand, we are trying to update it).
+            So these changes that we see here are actually go with the next commit
+
+    (7): git log --oneline --all --graph
+        --> Currently the HEAD is pointing to "Add a reference to Google ...", we told git that we wanna drop this second "WIP",
+            so git is trying to undo the changes introduced to this commit, in this case, adding this new file(terms.txt). New The
+            changes we have in the staging area are gonna go when replaying next commit "Update terms of service ...", and in 
+            this commit, we have two changes. So new we need to resolve the conflict.
+
+    (8): git mergetool
+        --> In this case we are going to use modification, because we wanna keep that file in our history. Type "m"
+    (9): git status -s
+        --> So we have two changes in the staging area that are going to the next commit.
+    (10): git rebase --continue
+        --> Also, if we screw something up or if we have a nasty merge conflict, we can always abort and go back to the stage 
+            before we started the rebase operation 
+    (11): git log --oneline --all --graph
+        --> So the first "WIP" is gone
+    
+    Here is an another example: we wanna drop these two commits("Revert bad code" and "WIP")
+    (12): git rebase -i HEAD~3
+        --> We can see the last three commits, new we are going to delete the first two lines
+
+    Back to the terminal, in this case, we do not have any conflicts.
+    (13): git log --oneline --all --graph
+        --> New all these commits are gone
+
+
+9: Rewording Commit Messages:
+    With this commit(Render restaurants in the map.) we have a rewording issue, the word(on) is missing, once again we are going 
+    to start interactive rebasing  
+    (1): git log --oneline --all --graph
+    (2): git rebase -i 6fb2ba7^
+        --> "^" means the parent of this commit
+        --> Change the "pick" to "reword", this time we have two mistakes(Render restaurants.... and Add a reference ....),
+            so we have to make two changes.
+        When we close the window, git will replay each of these commits, for every commit you wanna reword is going to stop 
+        and give us a chance to change the messages. (1: add "on", 2: add "v1.0")
+
+    When we finished the changes, back to the terminal
+    (3): git log --oneline --all --graph
+        --> In this demo, we reword this commit(Render restaurants...), which causes commits to be recreated, and that means 
+            all the subsequent commits were also recreated, so we have a rewritten history
+
+
+
+10: Re-ordering Commits:
+    In this demo, we have known that this commit(Add reference to ....) is on the wrong position of the history. So we are going 
+    to grab this commit and move it down.
+    
+    We are going to grab the oldest commit(Initial commit), so we can see all the commit in our rebase script
+    (1): git rebase -i 70ef834
+        --> So we can remove this commit(Add reference ...) to the top of these commits.
+    (2): git log --oneline --all --graph
+        --> So first we had a reference to Google map and then we Render this restaurants on the map.
+    
+
+11: Squashing Commits:
+    Look at these three commits(Render restaurants... -> Change the color...), these changes are logically part of the same 
+        unit of work, ideally we should have encapsulated all these changes inside a single snapshot. Let's say how can we 
+        combine these changes together.
+    
+    Start the parent commit(Add a reference...) of the first commit(Render restaurants...)
+    (1): git rebase -i ae7968b
+        --> Change "pick" to "squash" of the second commit(Fix a typo), with this, git will combine this commit with the previous
+            commit. Also change to "squash" of the third commit to combine this commit with the previous commit which is the 
+            combination of the first two commits.
+
+    Save the changes and we can see the messages, and we are going to discard (delete) the last two commits and keep the 
+    original commit(Render...)
+    (2): git log --oneline --all --graph
+        --> Our history is much cleaner now
+
+
+    We also have another command similar to squash, to use this command, first we wanna restore our history to the state before
+    we started the squash operation
+    (3): git reflog
+        --> We can see the state where we start the rebase operation(checkout ae7968b - rebase(start)), but we wanna go to the 
+            previous stage in history, and we can see that after we finish the previous rebase operation
+            (Return to refs/heads/master - (rebase finish)), we are going to copy this commit id
+    (4): git reset --hard 6f9aced
+    (5): git log --oneline --all --graph
+        --> We can see our original commits
+    (6): git rebase -i ae7968b(Add a reference...)
+        --> for the second commit, change "pick" to "fixup", when we use "fixup", git is not going to take the message of 
+            this commit, let's use fixup for the third commit as well. So when we close the window, git will take the message
+            of the first commit
+    (7): git log --oneline --all --graph
+
+
+
+12: Splitting a Commit
+    Look at this commit(Update terms of service...), there are two complete separate changes -- Update the Google version has 
+    nothing to do with updating terms of service, so we should separate this commit into two separate commits. grab this commit
+    id.
+
+    (1): git rebase -i 1c5ec5c^
+        --> Change to "edit", so when we close this window, git will stop rebase operation at this commit and here we have a 
+            chance to split this commit
+    (2): git log --oneline --all --graph
+        --> HEAD currently point to this commit, we can use the reset operation to go back to the stage before we made this commit
+
+    (3): git reset --soft HEAD^
+        --> We go one step back before we made this commit, so our changes will be in the staging area, here we can unstage
+            some of changes and make a separate commit
+        
+        git reset --mixed HEAD^
+        Alternatively, we can go two steps back, so we are going to unstage the changes, but our changes are going to be in the
+        working directory, then we can stage and commit them separately. This time we will use the second command.
+    (4): git status -s
+        --> We have two kinds of changes, we have some update in the package.txt and a new untracked file.
+    (5): git add package.txt
+    (6): git commit -m "Update Google Map version 1.0 -> 2.0"
+    (7): git log --oneline --all --graph
+        --> we have divergence.
+    (8): git add .
+        --> Add this untracked file
+    (9): git commit -m "Add terms of service."
+    (10): git log --oneline --all --graph    
+        --> And we have to notice that in this demo, we did not use the amend operation, because we did not really want to amend
+            or modify this commit(Update terms ...and Google map ..), we wanna replace this commit with two separate commits,
+            so new if we continue the rebase operation, git will replay the next commit(Render cafes to ...)
+    (11): git rebase --continue
+    (12): git log --oneline --all --graph
+    

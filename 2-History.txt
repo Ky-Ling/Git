@@ -1,0 +1,226 @@
+Venus
+
+1: Viewing the history:
+    (1): git log
+    (2): git log --oneline
+        --> Give us a summary of these commits
+    (3): git log --oneline --stat
+        --> See all the files have been changed in this commit
+    (4): git log --stat
+        --> We have the full detail about this commit
+    (5): git log --oneline --patch
+        --> To see the actual changes in this commit
+
+2: Filtering the history:
+    There are different ways to filter the history: We can filter it by author, date, commit message, content and so on.
+    (1): git log --oneline -3
+        --> To see the last three commits
+    (2): git log --oneline --author="Mosh"
+    (3): git log --oneline --before="2020-08-20"
+    (4): git log --oneline --after="2020-08-17"
+
+    We can also specify relative date:
+    (5): git log --oneline --after="yesterday"
+    (6): git log --oneline --after="one week ago"
+
+    (7): git log --oneline --grep="GUI"
+        --> Filter it by commit message or subject
+    (8): git log --oneline -S"OBJECTIVES"
+        --> Filter it by the content
+    (9): git log --oneline -S"OBJECTIVES" --patch
+        --> See the actual changes in this commit
+    (10): git log --oneline fb0d184..edb3594
+        --> Filter it by a range of commit
+    (11): git log --oneline toc.txt
+        --> Find all the commits that touch a particular file or a bunch of files
+    (12): git log --oneline -- toc.txt
+        --> We have to use this command when the hints say: hey, it is ambiguous, i can not figure out what option are you using.
+    (13): git log --oneline -- toc.txt --patch  
+        --> To see the actual changes of each of the commits. But is this case, we can not get the right output, because There
+            is "--" before toc.txt, after the "--", git will interpret "--patch" as a file name, so to address this problem,  
+            we have to use this command:
+    (14): git log --oneline --patch -- toc.txt
+
+
+3: Formatting the Log Output:
+    (1): git log --pretty=format:"hello %an"
+        --> "an" short for author name.
+    (2): git log --pretty=format:"%an committed %H"
+        --> "H" means full hash of each commit. There are another kind of placeholders, like %h, %T, %t, %P, %p and so on.
+    (3): git log --pretty=format:"%an committed %h on %cd"
+        --> "cd" means commit date
+    (4): git log --pretty=format:"%Cgreen%an committed %h on %cd"
+        --> The first placeholder is to change the color, the second is to display the author name.
+    (5): git log --pretty=format:"%Cgreen%an%Creset committed %h on %cd"
+        --> Only change tha color of author name.
+
+4: Creating Aliases:
+    In git, we can easily set up aliases for commands that use frequently.
+    (1): git config --global alias.lg "log --pretty=format:'%an committed %h'"
+        --> "lg" short for log.
+    (2): git config --global -each
+    (3): git lg
+        --> Check the configuration.
+    (4): git config --global alias.unstaged "restore --staged ."
+        --> With this command, we will restore all the files in the staging area.
+    (5): git unstaged
+
+5: Viewing a Commit:
+    There are two ways to review the commit: Commit ID or relative reference using the HEAD pointer.
+    (1): git log --oneline
+    (2): git log HEAD~2
+        --> Go to the HEAD, which is the last commit, and then go two steps back. So we can see all the details about this commit.
+    (3): git show HEAD~2:sections/creating-snapshots/staging-changes.txt 
+        --> We do not wanna see the changes, we wanna see the final version of a file in this commit. After the ":", we type 
+            the path of the file.
+    (4): git log HEAD~2 --name-only
+        --> We do not wanna see the actual changes or actual lines of code in this commit. We just wanna see the final file 
+            which is modified in this commit. So in this case we can see all the files that have been added, modified or 
+            deleted in this commit.
+    (5): git log HEAD~2 --name-status
+        --> To get more information about this file in the commit.    
+    
+
+6: Viewing the Changes Across the Commit:
+    For example, we wanna know what have been changed over the last three commits.
+    (1): git diff HEAD~2 HEAD
+        --> In the previous section, we have know that we can use this command to view the stage and unstaged changes, new we 
+            are going to use the same command to see the difference between two commits.
+    (2): git diff HEAD~2 HEAD audience.txt
+        --> We wanna see the difference in a particular file.
+    (3): git log HEAD~2 HEAD --name-only
+        --> To see a list of files have been changed
+    (4): git log HEAD~2 HEAD --name-status
+
+7: Checking out a Commit:
+    We wanna see the complete snapshot of our project at a point of time. In this situation, we can check out a given commit,
+    and this will restore our working directory to the snapshot stored in that commit. So our working directory will look exact
+    earlier point of a time
+    (1): git log --oneline
+    (2): git checkout dad47ed
+        --> We wanna restore our working directory to this commit. From the result, we can see the sentence "You are in 'detached HEAD' state"
+    (3): git log --oneline
+        --> We can see all the commits earlier, those commits are kind of visible. And on the top, we only have the HEAD pointer,
+            we do not see the master branch.
+    (4): git log --online --all 
+        --> The master is in front of the last command, but the HEAD is not going to point master anymore.
+    (5): git checkout master
+        --> As we can see, we are on the master branch, and new we can create new commits.
+
+8: Finding Bugs Using Bisect:
+    Let's say we have created all the commits, and at this point in time, which is the last commit, we have a bug in our application.
+    We do not know where this bug was introduced, and we do not wanna check out each of these individuals commits, that is going to take 
+    a long time. So we can use the Bisect command, we can quickly find the commit introduce the issue.
+    (1): git bisect start
+        --> To find the bad commit, we have to run this command.
+    (2): git bisect bad
+        --> We should tell git that the current commit which is the last commit, is a bad commit.
+    (3): git bisect good ca49180
+        --> We should also give a good commit. And we are not in master anymore.
+    (4): git log --oneline
+        --> The HEAD is detached, because it does not point master anymore. 
+    (5): git log --oneline --all
+        --> We have two references in the result, one is on the top and the other is on the bottom. HEAD is in the middle point,
+            so git check out this HEAD commit and our working directory is restored to this point in time, so we can run our application 
+            or use the automated test to see if the issue still there or not. If the issue is there, that means the bug was 
+            introduced somewhere around from the HEAD to the bottom reference (The first half of the history). There is no need
+            to examine the second half. On the other hand, if the HEAD commit is a good commit, the issue is introduced in the 
+            second half.
+    (6): git bisect good
+        --> Check the result
+    (7): git log --oneline --all
+        --> We can do the same thing as we did before.
+    (8): git bisect good
+        --> Check one more time
+    (9): git log --oneline --all
+        --> Let's say the HEAD commit is a bad commit
+    (10): git bisect bad
+    (11): git bisect bad
+        --> Finally, we get the issue.
+
+    So with the bisect command, we can divide the history in half, and check out various commits to find the first bad commit,
+    When we are done, we can detach the pointer to the master branch. S0:
+    (12): git bisect reset
+
+
+9: Finding Contributors Using Shortlog:
+    (1): git shortlog
+    (2): git Shortlog -h
+        --> Find other options about this command(Ask for help)
+    (3): git shortlog -n
+        --> The results are sorted based on the number of commits per author.
+    (4): git shortlog -n -s
+        --> To suppress the commit messages.
+    (5): git shortlog -n -s -e
+        --> To see email address of each author
+    (6): git shortlog -n -s -e --before=""
+         git shortlog -n -s -e --after=""
+        --> To filter the commits.
+
+
+10: Viewing the History of a File:
+    (1): ls 
+    (2): git log toc.txt
+        --> To find all the commit that have touched this file
+    (3): git log --oneline toc.txt
+    (4): git log --oneline --stat toc.txt
+        --> View the particular commit in detail
+    (5): git log --oneline --patch toc.txt
+        --> To see the actual changes in the commit.
+    
+11: Restoring a Deleted File:
+    How to recover a deleted file from the history?
+    (1): git rm toc.txt
+    (2): git commit -m "Remove toc.txt"
+    (3): git log --oneline toc.txt
+        --> Find all the commits that are touched this file. But from the result, we may get a problem, we have to add "--" to our    
+        command.
+    (4): git log --oneline -- toc.txt
+    (5): git checkout a642e12 toc.txt
+        --> To restore this file, we need to look at the parent of this last commit (a642e12), this is where we had the latest
+            version of this file. So we have to check out only the table of content file from this commit.
+    (6): git status -s
+    (7): git commit -m "Restore toc.txt"
+
+
+12: Blaming:
+    We can fid the author of a particular line.
+    (1): git blame audience.txt
+        --> We can get some information from the result.
+    (2): git blame -e audience.txt
+        --> We can get the author's email.
+    (3): git blame -e -L 1,3 audience.txt
+        --> We can also filter by line. So if we have a large file and we wanna see the details. Let's if we only interest
+        the first three lines.
+
+13: Tagging:
+    We wanna bookmark certain points in the history of our project. Like commit represent a giving version.
+    (1): git log --oneline 
+        Let's say the last commit represent the first version of our software. So we can give it a tag or custom label.
+    (2): git tag v1.0 
+        --> Give a tag to the last commit
+    (3): git tag v1.1 5e7a828
+        --> Give a tag to earlier commit with commit ID
+    (3): git log --oneline
+    (4): git checkout v1.0
+        --> We can reference a commit using the tag, we wanna check out this commit in this case. Exactly the same way with 
+        checking out a commit using ID.
+    (5): git tag
+        --> To see all the tags we have created
+        --> This kind of tag is what we called lightweight tag, it is just a reference or a pointer to a particular commit.
+            But we also have another type of tag called annotated tag, which is a complex object with a bunch of properties,
+            like tager name, email and message.
+    (6): git tag -a v1.2 -m "My version 1.1"
+        --> Create a annotated tag with tag name and message. 
+    (7): git tag
+        --> Look at the tags we have created.
+    (8): git tag -n
+        --> To see the message we typed, from the result, we can know that the message about the lightweight tag is actually
+            the message of the commit. The annotated tag which has a custom message
+    (9): git show v1.2
+        --> To see the details about the second tag
+    (10): git tag -d v1.2
+        --> To delete a tag
+    (11): git tag
+        --> Check
+

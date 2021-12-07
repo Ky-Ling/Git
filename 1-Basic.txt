@@ -1,0 +1,312 @@
+
+1: Configure the setting:
+    (1): git config --global user.name "GC"
+    (2): git config --global user.email 2845740149@qq.com
+    (3): git config --global core.editor "code --wait"
+        With "wait" flag, we can tell the terminal window to wait until we close the new VSCode instance.
+    
+    All these configuration settings are stored in a text file, we can edit that file using our default editor which is VSCode in this case.
+
+    So next:
+    (4): git config --global -e  --> It will open our default editor to edit all the global settings. And from the terminal
+        we can know that if we close the file window, we can execute the next command.
+    (5): git config --global core.autocrlf true 
+        How git should handle end of lines?  (If you are windows, you should set it to true, if you are mac or linux, set it to input)
+
+2: Get the help about the configuration: 
+    (1): Search "git config" in google
+    (2): use the terminal: git config --help or git.config --h
+
+
+1: How to take snapshots of our project?
+    (1): mkdir Moon: Create a directory for our project
+    (2): cd Moon: Change the directory to Moon and then do something in the Moon folder.
+    (2): git init: initialize a new empty repository
+    (3): ls: to list all the files and directories
+    (4): ls -a: short for all
+    (5): open .git: This is the git directory or git repository, this is where git stores information about our project history.
+    (6): rm -rf .git: Remove the git repository
+
+2: staging files:
+    (0): echo hello > file1.txt
+    (1): echo hello > file2.txt  --> Create two files
+    (2): git status  --> to see the status of the working directory and the staging area.
+    (3): git add file1.txt file2.txt  --> add these files to the staging area
+         git *.txt  --> That means all the files with the extension with .txt 
+         git .      --> Add the entirely directories recursively            
+    (4): Run git status again, we can see these two files are in the staging area
+    (5): echo world >> file1.txt  --> do something with file1, ">>" means append
+            --> use git status to see the changes
+            Here is the current situation: in the staging area we have the first version of the file1, we changed the file after
+                we added it to the staging area, so what we currently have in our working directory is the second version of this file,
+                it has some changes that are not staged yet. So we have to add this file1 again and see the changes with git status.
+                We can see that both these files are in the staging area and we do not have any unstated changes.
+
+3: Committing changes:
+    How to commit the snapshot to permanently store it in our git repository? 
+    (1): git commit -m "Initial commit."  --> 
+         git commit  --> It will open the editor, and then we can write some descriptions about the commit on the top. Then save the changes 
+            and back to the terminal to see the results.
+
+4: Committing Best Practices:
+    (1): First, the commits should not be too big or small, we do not wanna make a commit every time we update a file.
+    (2): Commit often: as you reach a state you want to make a record, then make a commit, and each commit should represent a logically
+        separate change set, so do not mix things up.
+    (3): Create meaningful commit messages.
+
+5: Skipping the staging area:
+    (1): echo test >> file1.txt  --> We append the "test" to the file1.txt
+    (2): git commit -am "fix the bug that prevented the user from signing up."   --> "a" means all the modified files
+     
+    So this is how we can skip the staging area, but 99% of the time we should always state our code before committing it to the repository.
+
+6: Remove files:
+    (1): rm file2.txt
+    (2): git status
+        --> So we remove file2.txt from our working directory, but still exists in the staging area.
+    (3): git ls-files
+        --> All the files from the staging area. From the result, we can know that every time we make changes we have to state 
+            these changes using add command.
+    (4): git add file2.txt
+    (5): git ls-files 
+        --> The file2 is no longer in the staging area.
+    (6): git status
+    (7): git commit -m "Remove the file2.txt"
+        --> So we removed this file both from working directory as well as the staging area
+
+    Special command: git rm file2.txt
+
+7: Renaming or Moving files:
+    currently we only have a single file in our working directory
+    (1): mv file1.txt main.js
+        --> We can rename and move files and directories
+    (2): git status
+    (3): git add file1.txt
+        --> staging the deletion
+    (4): git add main.js
+        --> add the untracked file
+    (5): git status
+        --> See the changes
+    
+    So renaming or moving files is a two-step operation, first we have to modify our working directory and then we have to state
+        two types of changes (an addition and a deletion)
+
+    Special command: 
+    (1): git mv main.js file1.js  
+            --> rename main.js to file1.txt. 
+    (2): git status
+            --> So when we use this command, the changes are applied both the working directory and the staging area.
+    (3): git commit -m "Refactor Code"
+
+
+8: Ignoring files:
+    Log files are not something we want to share and synchronize with our team members.
+    (1): mkdir logs
+    (2): echo hello > logs/dev.log
+    (3): git status
+        --> We have an untracked directory called logs, and we do not wanna add this to the staging area, because we do not wanna
+            git to track this, so to prevent this, we have to create a special file called .gitignore, this file do not have a 
+            name, it only has a extension, and it should be in the root of our project.
+    (4): .gitignore
+    (5): echo logs/ > .gitignore
+    (6): code .gitignore 
+        --> Use the VSCode
+            With the file logs/, we can list as many files and directories as we want here. For example, we can add main.log and
+            *.log, and then save the changes and back to the terminal.
+    (7): git status
+        --> The git no longer says that we have a new directory called logs, because it is ignoring. 
+    (8): git add .gitignore
+    (9): git commit -m "Add gitignore."
+
+    
+    
+    So this is how we can ignore files and directory in git. This only works if you have not already included a file or a directory
+        in your repository. In other words, if you accidentally include a file in your repository and then later added to the git
+        ignore, git is not going to ignore that. Here is an example:
+    (1): mkdir bin
+    (2): echo hello > bin/app.bin
+    (3): git status
+        --> We have a new directory, now we wanna accidentally commit this to our repository, so we have to add all the changes 
+            and then commit our code.
+    (4): git add .
+    (5): git commit -m "Add bin"  
+        --> But here we got a problem, every time we compile our code, git is going to say that this file bin/app.bin is changed, 
+            so we have to stage it and commit it, but it does not make sense. Why do we have to commit this file every time we compile
+            our application.
+            So back to the git ignore(code .gitignore), and add "bin/" directory. Then back to the terminal
+    (6): git status
+        --> We have modified our ignore.
+    (7): git add .
+    (8): git commit -m "Include bin/ in gitignore"
+        --> So in this case git is not going to ignore the changes in this directory, because it is already tracking this directory.
+            So let's modify our bin file.
+    (9): echo helloworld > bin/app.bin
+    (10): git status
+        --> This file is modified. So to address this problem, we have to remove this file from the staging area which is what we
+            are proposing for the next commit.
+    (11): git ls-files
+    (12): git rm -h
+        --> Ask for help
+    (13): git rm --cached -r bin/
+        --> Remove this file only from the staging area. We can remove the bin directory from the staging area. New this entirely 
+            directory is removed from the staging area.
+    (14): git ls-files
+        --> Check
+    (15): git status
+        --> We have one changed that is ready to be committed.
+    (16): git commit -m "Remove the bin directory that was accidentally committed."
+        --> So git is no longer going to track the changes in the directory. For example:
+    (17): echo test > bin/app.bin
+        --> We can see our working directory is still clean, we do not have any changes, we can verify it using git status.
+    (18): git status
+        
+
+
+9: Short Status:
+    For this demo, we will modify one of our existing files and then add a new file.
+    (1): echo sky >> file1.js
+    (2): echo sky > file2.js
+        --> Create a new file
+    (3): git status
+        --> We have modified file1.js and and we have a new untracked file, as we can see, the output of this command is verify
+            comprehensive but also very wordy. So let's run git status -s "short"
+    (4): git status -s
+        --> From the result, the left column represents the staging area, the right column represents the working directory.
+            So we have modified the file1, that why it has red " M", so we have some changes here, but these changes are not in
+            the staging area, that's why we do not have anything in the left column. And file2 is a new file, that's why we have
+            "??" in both these columns.
+    (5): git add file1.js
+        --> Add file1 to the staging area.
+    (6): git status -s
+        --> we have a green "M " in the left column or the staging area column, so all the changes we have in the working area 
+            are now in the staging area, in the right column we do not have anything, we do not have any extra changes.
+
+            As we all know, when we stage a file, git takes a snapshot of this file and puts it in the staging area, so if we 
+            modify that file after, we have to restage the changes.
+
+    (7): echo ocean >> file1.js
+    (8): git status -s
+        --> we have green "M " in the left column which means we have some changes in the staging area and red " M" in the 
+            right column which means we have some additional changes in the working directory that are not added to the staging area.
+    (9): git add file1.js
+    (10): git status -s
+        --> All the changes we had in the working directory are now in the staging area.
+    (11): git add file2.js
+    (12): git status -s
+        --> For file2, we have a green "A " in the left column which represents added, so file2 is added and file1 is modified.
+
+
+10: Viewing the Staged & Unstaged Changes:
+    In the last demo, we have staged a couple of changes, now before committing what we have in the staging area, we need to review
+        our code, because we do not wanna commit bad code or broken code to our repository.
+    (1): git diff --staged
+        --> See the exact lines of code that we have staged. To see what we have in the staging area that is going to the next commit.
+    (2): git diff
+        --> See the changes in our working directory that are not staged yet. In this demo, we do not have output here, because 
+            we have staged all the changed in our working directory. We can also verify this using git status -s
+    (3): git status -s
+    (4): code file1.js
+        --> Make a change to file1 with VSCode. Change "world" to "hello world"
+    (5): git status -s
+        --> So for file1, we have some changed in our working directory that are not in the staging area.
+    (6): git diff
+        --> To see the changes
+
+
+11: Visual Diff Tools:
+    Tell the git that we wanna use the VSCode as our default diff tool.
+    (1): git config --global diff.tool vscode
+         git config --global difftool.vscode.cmd "code --wait --diff $LOCAL  $REMOTE"
+         git config --global -e
+    (2): git difftool   
+        --> This will launch our visual diff tool for comparing files, now if we do not still play any arguments, we are going see
+            our on stage changes, so this will compare what we have in the working directory with what we have in the staging area.
+            If you wanna look at our staging changes, we supply git difftool --staged
+
+            From the result, we can see the old copy(left side) which is what we have in the staging area, and the new copy(right side) which is what we have
+            in the working directory. It is much easier to see the changes.
+    (3): git difftool --staged
+        --> We can see the old copy is what we have in the last command, and the new copy is what we have in the staging area.
+
+12: Viewing the History:
+    (1): git log
+        --> Look at the history and press "q" to exit.
+    (2): git log --oneline
+        --> It shows us a short summary of the commits.
+    (3): git log --oneline --reverse
+        --> Reverse the sort order.
+
+13: Viewing the Commit:
+    (1): git show  f0686ce or git show HEAD~1 (Go to one step)
+        --> There are two ways to reference the commit.
+    (2): git show HEAD~1:.gitignore or git show HEAD~1:bin/app.bin
+        --> We do not wanna see the differences, we wanna see the final version that is stored in this commit.
+    
+    Each commit contains a complete snapshot of a working directory, not just changes, but when we run the show command,
+        we only see the differences, but it is changed. What if you wanna see all the files and directories in a commit.
+    (3): git ls-tree HEAD~1
+        --> From the result, we can see there are all the files and directories stored in this commit. Files are represented using
+            blobs, directories are represented using trees, all of these are objects that are stored in git's database.
+        
+    (4): git show de80 
+        --> Show the object in git's database. "de80" means the unique identifier, we can type all the identifier or only a few
+            characters. So here is the content of the gitignore file.
+
+14: Unstaging Files:
+
+    Earlier we use the add command to add file1.js to the staging area, but we did not commit it to the repository (git status -s),
+    new we wanna undo this operation.
+    (1): git restore --staged file1.js
+    (2): git status -s
+        --> We can not see the green "M" anymore, because all the changes we had in the staging area are now in the working 
+            directory.
+
+            The restore command essentially takes the copy from the next environment, so in case of the staging environment, 
+            what is the next environment? --> The last commit, what we have in the repository. So when we restore file1 in the 
+            staging area, git took the last copy of the file from the last snapshot and put it in the staging area.
+
+            For file2, we have this new file in the staging area, but this file does not exist in the last commit. What will 
+            happen when i restore this file2? Because we do not have a copy of this file in our repository or in our last commit.
+            Git is going to remove this file from the staging area and take it back to its previous state, which is a new untracked
+            file.
+    (3): git restore --staged file2.js
+    (4): git status -s 
+        --> From the result we can know that file2 is a new untracked file again(with ??). 
+
+15: Discarding Local Changes: 
+    There are times that we have some code in our working directory that we wanna throw away, we wanna scratch everything 
+        and start over.
+    (1): git restore .
+        --> We restore everything.
+    (2): git status -s
+        --> From the result, file2 is still existing, this is a new untracked file, so git has not been tracking this. So when we 
+            ask git to restore this file, git does not know where to get the previous version of this file, it does not exist
+            in our staging environment or in our repository. So to remove all these new untracked files we have to type "git clean"
+    (3): git clean -fd
+    (4): git status -s
+        --> New everything is clear. So this is how we can undo the local changes.
+
+16: Restoring a File to an Earlier Version:
+    When git tracks a file, it stores every version of that file in its database, and that means if you screw things, we can
+    always restore a file or directory to a previous version, So in this case, we will delete a file and then restore it.
+    (1): rm file1.js
+        --> It will only Restoring a File to an Earlier Version. But after that we have to add it to the staging area and commit it.
+         git rm file1.js
+        --> It will remove the file from both the working directory as well as the staging area. Here we would better use this 
+            command.
+    (2): git status -s
+        --> So in the staging area, we have a deleted file( With green "D").
+    (3): git commit -m "Delete file1.js"
+
+    But this time, we realize that we should not delete this file, what should we do?
+        We can undo or revert the last commit. and we can also restore this file to a previous version.
+    (4): git log --oneline
+        --> Look at our history
+    (5): git restore --source=HEAD~1 file1.js
+        --> We wanna Restoring a File to an Earlier Version.
+    (6): git status -s
+        --> Here we get a new untracked file
+
+
+
+17: Creating snapshots Using VSCode:

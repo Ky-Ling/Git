@@ -1,0 +1,394 @@
+1: Centralized Workflow:
+    everyone has their local repository, and there is also a central repository that used to synchronize their work.
+
+2: Cloning a repository:
+    New we have created new repository and invite contributors. We have a Github repository in the cloud, new every team member
+    should clone this repository. Locally they will work with that repository, and when they are ready to share their changes,
+    they will push their changes to the central repository.
+
+    (1): Get the full URL of this repository and copy that.
+    (2): git clone + URL MarsProject
+        --> And when we execute this command, git will create a directory by the same name of this repository. And we can 
+            change the name (add the new name after this command)
+    (3): cd MarsProject
+        --> Go to this directory
+    (4): git log --oneline --all --graph
+        --> Currently we only have a single line of commit. "origin" is a reference to that repository, "origin/master" tells
+            us where is the master branch in our original repository, and "origin/master" is a remote tracking branch, we can not
+            check it out, we can not commit to it. Similarly, "origin/HEAD" tells us where is the head pointer in our origin repository
+    (5): git switch origin/master
+        --> We will get an fatal message
+    (6): git branch
+        --> We only have the master branch.
+
+    (7): git remote 
+        --> Show us the list of remote repositories.
+    (8): git remote -v
+        --> "v" stand for "verbose", we can see more details about this remote repository
+
+
+3: Fetching:
+    We have to know that the local repository is not connected to the remote repository, so if we have a new commit in a remote
+    repository, our local repository will not be aware of that, but we can use the git fetch command to download this commit and
+    move the origin/master forward, so that is why origin/master is a remote tracking branch. But even though we downloaded this
+    commit, our working directory is not update, because Currently the master is not pointing to this commit, it points the 
+    previous commit. So to bring these changes to the master, we have to merge the other branch into master (git merge origin/master),
+    and in this case we will have a fast forward merge. But if the branches have diverged, potentially we will have a conflict,
+    so we have to address this conflict. 
+    
+
+    (1): We can go to Github and upload a new file (But in this demo we will edit origin file and create a new commit directly on the repository)
+    (2): Add a new line of code in the README.md and the press "Preview commit", and in this case we will commit directly to the
+        master branch, and then commit changes.
+
+    Back to the terminal:
+    (3): git log --oneline --all --graph
+        --> We only have the master branch new
+    (4): git fetch
+        --> With this command, for "git fetch origin branchname", "origin" means specify the remote, and "branchname" means 
+            the commits we downloaded in a particular branch. If we type "git fetch origin", it means we will download all the
+            commits in that remote repository, and we can type "git fetch" as well.
+    (5): git log --oneline --all --graph
+        --> New our remote tracking branch have moved forward and the master branch is one commit behind the origin/master.
+    (6): git branch -vv
+        --> It shows how our local and remote tracking branches are divergent.
+    (7): git merge origin/master
+        --> because our branches have diverged, we have direct linear path, so we will have fast forward merge
+    (8): git log --oneline --all --graph
+        --> So the master and origin/master branches are pointing to the same commit.
+    (9): git branch -vv
+    (10): cat README.md
+        --> View the content
+
+4: Pulling:
+    So to bring the changes in a remote repository into our local repository, most of time we have to do a fetch followed by merge,
+    but we have a command to combine these (pull = fetch + merge)
+    (1): Add a new line to the README.md and make commit.
+    (2): echo hello > file1.txt
+    (3): git add .
+    (4): git commit -m "Add file1"
+    (5): git log --oneline --all --graph
+        --> Our master branch is ahead of origin/master branch by one commit
+    (6): git pull 
+        --> git will download the new commit in our Github repository, and then perform 3-way merge to bring these changes into
+            our master
+    (7): git log --oneline --all --graph
+        --> So we ended up with nonlinear history. But here we can use rebase to create linear history. Before we doing so, we 
+            need to undo this last merge commit, so we ended up with the previous state.
+    (8): git reset --hard HEAD~1
+    (9): git log --oneline --all --graph
+        --> So new we are on the previous state before merge commit, our branches have diverged
+    (10): git pull --rebase
+
+    (11): git log --oneline --all --graph
+        --> New we have simple linear history, the commit we have in master for adding file1, is added on the top of the last
+            commit made by Github
+
+5: Pushing:
+    (1): git push origin master
+        --> After the "push", we need to specify the remote repository and finally specify the branch we wanna push, and when 
+            we run this command, we need to type username and password
+    
+    But sometime the push will be rejected
+    (2): git push -f
+        --> With this force option, git will drop out of people's work and replace it with your work. We should not use this command
+            if we do not have strong reason
+
+    (3): git pull
+        --> Bring other's work into our local repository, then we have to do a merge or rebase. If there are some conflicts,
+            we need to resolve them and then we can do a push. And when we do a push, git will send these commits to origin, so new
+            we have the same state in both these repositories, the final code and history of changes are identical
+
+6: Storing Credentials:
+    In the last section, when we push the commits, we have to enter Github Credentials. We can store our Credentials in memory
+    or on desk
+    (1): git config --global credential.helper cache 
+        --> Store for 15 minuets in the memory
+    (2): go to Github and search "Microsoft/Git-Credential-Manager-for-Windows"
+
+
+7: Sharing Tags:
+    By default, the push command does not transfer our tags to a remote repository
+    (1): git tag v1.0
+    (2): git log --oneline
+        --> Git tag is only available in this repository on my machine, if you wanna send this to Github and share with other
+            team members, we have to use this command:
+    (3): git push origin v1.0
+        --> Our tag new is on Github, we can go to Github and verify the changes
+    
+    But if we add this tag accidentally, we can remove it using push command:
+    (4): git push origin --delete v1.0
+        --> In Github, we do not have this tag anymore, but this tag is still in the repository.
+    (5): git log --oneline
+        --> Look, this tag is still here
+    (6): git tag -d v1.0 
+    (7): git log --oneline
+
+8: Releases:
+    With release management, we can create a release tp package or software along with source code, binary files and release notes.
+    
+    (1): In the home page: 
+        "Tags"
+        "Releases"
+        "Create a new release"  -->"v1.0"
+            -->  When we create this release, Github will automatically add this tag to the latest commit. 
+        "Release title --> v1.0" 
+        "Describe the release"
+            --> # Release notes
+                - Fixed bug1
+                - Fixed bug2 
+                - Added a form ...
+        "Publish release"
+        
+        And then we can see the details about this release. Back to the homepage, we can see the releases in the left side.
+
+
+9: Sharing Branches:
+    If we wanna collaborate with other team members using a branch, we have to explicitly push that branch, the same way Pushing
+        tags.
+    (1): git switch -C feature/change-password
+        --> This is the private branch in our local repository, it does not exist in Github
+    (2): git push
+        --> We will get a fatal message, it means this branch is not linked with the branch in origin
+    (3): git branch -vv
+        --> Here we can see the local and remote tracking branches, and we can see the master is linked with origin/master, but
+            the feature branch is not linked with remote tracking branches.
+    (4): git branch -r
+        --> To see all the remote tracking branches
+    (5): git push -u origin feature/change-password
+        --> After the "-u", we type remote tracking branch, and this followed by the name of the branch 
+
+    (6): We can verify in the Github, new we have two branches 
+    (7): git branch -vv
+        --> New we can see this feature branch is now linked with this remote tracking branch
+    (8): git branch -r
+        --> New we have a new remote tracking branch. And from new on, we can start working with branch the same way we work 
+            with master, so we can make new commits here and then push them to the origin. But at some point, when we are done,
+            we wanna remove this branch:
+    (9): git push -d origin feature/change-password
+        --> New this branch is deleted from the origin, we can verify it in the Github
+    (10): git branch -r
+    (11): git branch -vv
+        --> We still have this local branch, but we can see "gone". So even though we remove this branch from origin, our local
+            branch is still there
+    (12): git branch    
+    (13): git switch master
+    (14): git branch -d feature/change-password
+
+
+10: Collaboration Workflow:
+    One way: Create a feature branch and push it to Github
+    Another way: Create a branch directly on Github
+    
+    (1): Create a new branch: "master" - feature/change-password
+        --> Then this branch is currently selected in the repository. And we can see "This branch is even with master": So as we
+            push this branch, we can see how far this branch is ahead of master.
+
+    Back to the terminal:
+    (2): git fetch
+        --> To get this new branch
+    (3): git branch
+        --> We only see master branch
+    (4): git branch -r
+        --> We have a remote tracking branch. So when we run fetch, we only can get a remote tracking branch. So new we have to
+            create a private branch in our local repository
+    (5): git switch -C feature/change-password origin/feature/change-password
+        --> Pay attention to the result message. So here on my machine, I can add new branch to this branch and then push it
+            to origin
+    
+
+    New we have to create a new folder (Amy) as another team member.
+    (6): git clone + URL 
+    (7): cd Mars
+    (8): git branch
+        --> We only have a master branch
+    (9): git switch -C feature/change-password origin/feature/change-password
+
+    And then we will make a commit and push it to Github
+    (10): echo password > file1.txt
+    (11): git commit -am "update file1"
+    (12): git push
+        --> Let's verify in the Github. To see the commits in the feature branch 
+
+    New back to my machine:
+    (13): git pull  
+    (14): git log --oneline --all --graph
+        --> Our feature branch is one commit ahead of master, so we have to merge this branch into master
+    (15): git switch master
+    (16): git merge feature/change-password
+        --> Once again, we have a fast forward merge
+    (17): git log --oneline --all --graph
+        --> New master and feature branch are pointing to the same commit, however, origin/master is one commit behind master.
+            So here we have to do a push to send the final changes to Github 
+    (18): git push
+        --> New all changes are on the Github
+    (19): git log --oneline --all --graph
+        --> New master and origin/master are on the same position. 
+
+    And we can verify in the Github, obviously we have a commit that is for implementing the change-password feature. So we are 
+        done with this feature, we should close this branch
+    (20): git push -d origin feature/change-password
+    (21): git branch
+        --> Similarly, we still have this local branch
+
+    (22): git branch -d feature/change-password
+    (23): git branch
+        --> So this time on my machine, we only have the master branch
+    (24): git branch -r
+        --> We no longer have this remote tracking branch 
+
+    Go to Amy's machine:
+    (25): git switch master
+    (26): git pull
+        --> To bring the merge changes that me pushed 
+    (27): git branch
+        --> We still have the private feature branch
+    (28): git branch -d feature/change-password
+    (29): git branch -r
+        --> We still have the remote tracking branch, even though this branch is removed from the origin
+    (30): git remote prune origin
+        --> To remove the tracking branches that are not on the remote. 
+    (31): git branch -r
+        --> We no longer see that remote tracking branch
+
+
+11: Pull requests:
+    As we implement a feature or fix a bug, we would like other team members feedback about our code. With pull requests, 
+        we essentially open a discussion to team before merging a branch into master. 
+
+    Let's say Arm is going a implement a new feature:
+    So in Arm's machine:
+    (1): git switch -C feature/login
+    (2): echo hello > file3.txt
+    (3): git add .
+    (4): git commit -m "Write hello to file3"
+    (5): git push -u origin feature/login
+        --> "u" means to push this upstream branch 
+    
+    Then go to Github and go to "Pull requests" - "New pull requests". And then we have to change the target branch to "feature".
+        So before merge this branch into master, we wanna start a pull request or discussion of a team. Then we can see some 
+        details, finally "Create pull request"
+
+    Then we can change the name to be more descriptive (Feature: Social Login),  and we can write some comments, like "Here we
+        can write some details...". Then finish this process.
+
+    This time I am Arm, I wanna Mosh as a reviewer, on the right hand, we can see all the collaborator in this project.
+        So we can go to a new Github Window and login in with Mosh's account. And then we can see this pull request, and 
+        then Mosh can "add your view", Mosh can do something with this review and finally finish this review.
+
+    Back to Arm's machine:
+    (6): echo Hello > file3.txt
+    (7): git commit -am "Capitalize Hello."
+    (8): git push
+
+
+    And then we can do something in the Github, finally - "Merge pull request" - "Delete branch"
+
+    Back to Arm's machine:
+    (9): git switch master
+    (10): git pull
+    (11): git log --oneline --all --graph
+        --> Both of the master and origin/master are pointing to the same commit, and we do not need the feature/login branch,
+            So we have to delete this branch as well as the remote tracking branch, but we have removed this branch from the 
+            Github, so new we have to remove this from repository.
+    (12): git remote prune origin
+    (13): git branch -r
+        --> We do not have that remote tracking branch anymore
+    (14): git branch -d feature/login
+        --> Remove the local branch
+
+
+12: Resolving Conflicts:
+    What if we have a conflict when merging and closing the pull request. So in this case in Arm's machine, we will start a new
+    branch, add a commit, push it, create a pull request, and in the meantime, we will create a conflict change on master, so 
+    when we merge this branch into master, we will get a conflict.
+
+    (1): git switch -C feature/logout
+    (2): echo hello > file1.txt
+    (3): git add .
+    (4): git commit -m "Write hello to file1"
+    (5): git push -u origin feature/logout
+
+    So we can create a pull request in the Github, but before doing so, we will create a conflict in the master.
+    (6): git switch master
+    (7): echo world > file1.txt
+    (8): git commit -am "Write world to file1"
+    (9): git push
+
+    So let's say Arm has finished her work, so she will start her pull request. But Github says we can not automatically merge 
+        the changes because we have conflicts. Go ahead,  title - "Feature/Logout". Then we have a pull request, But Github is
+        saying we have to resolve the conflicts. One way is to use the commands in the terminal like before, the another way is
+        to resolve the conflict on Github. After we Resolving the conflicts, new we can merge the pull requests
+
+
+13: Github Issues:
+
+    (1): Create a new issue, and give it a name - Send email when someone signs up, and we have more things to do in the right
+        hand. When we submitted the issue, we can have a conversation with this issue, we can "linked pull requests" in the 
+        right hand, with this, when we merge and close a pull request, this issue will be automatically closed
+
+14: Github Labels:
+15: Github Milestone
+16: Contributing to an Open-Source Project:
+    (1): Find this open-source project, and if we wanna fix some issues of this project in pur own account, we can fork 
+        this repository, and Github will take a complete copy of this repository and put it in my account, we can have a full 
+        control over this repository, we can do anything we want
+    
+    (2): Grab the url of this repository and clone it.
+    (3): git clone + URL 
+    (4): cd vidly-mvc-5
+    (5): git switch -C bugfix
+    (6): echo hello > README.md
+    (7): git commit -am "Update README"
+    (8): git push -u origin bugfix
+    
+    Back to Github:
+    (9): Start pull request
+         Title: Bugfix: Change password form
+         Create pull request
+        
+         And we have to notice that currently we are just a contributor, we can not merge and close the pull request, only the 
+         maintainer can do that.
+
+
+17: Keeping a Fork Up to Date:
+    In the local repository on the machine, we have a reference to remote repository called origin, we can add another reference
+    to the base repository, and then use the pull command to bring these new commits, and then we can push them to the Fork
+    repository.
+
+    (1): git remote
+        --> Currently we only have a single remote that is origin
+    (2): git remote -v
+        --> To see more details
+    (3): git remote add upstream + URL
+        --> Add a new remote and grab the base URL of base repository
+    (4): git remote
+    (5): git remote -v
+    (6): git remote rename upstream base
+        --> Rename this remote or we can remove this remote (git remove rm base)
+
+
+    Go to Github to make some changes in the base repository. --> Add a new line of code
+    So we add a new commit to the master branch of the base repository
+
+    Back to the fork repository, Github will say "This branch is 1 commit behind mosh/master"
+
+    Back to terminal:
+    (7): git fetch base
+    (8): git log --oneline --all --graph
+        --> Our local master is behind the master of the base repository, so we should merge the base master to our local master,
+    (9): git switch master
+    (10): git merge base/master
+    (11): git log --oneline --all --graph
+        --> New our base master and local master are pointing to the same commit.
+    (12): git push
+        --> Push the changes to the fork repository
+
+    Back to the Github of the fork repository, Github will say "This branch is even with mosh/master"
+
+    Back to terminal, it is always a best practice to merge the master branch into our local feature branch, it will reduce the
+    chance of conflict in the feature.
+
+    (13): git switch bugfix
+    (14): git merge master
+        --> We will get a conflict 

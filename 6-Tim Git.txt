@@ -1,0 +1,125 @@
+1: git init
+2: Tracking area & Git Tracking
+    (1): Create some Python file in this folder and we can know that they are untracked files
+    (2): git status
+    (3): git add .
+    (4): git commit -m ""
+    (5): git rm --cached test.py
+        --> Untrack this file
+
+2: Make some changes in one file -- test.py
+    (1): git status
+    (2): git add test.py
+    (3): git status
+    (4): git commit -m "Change this file"
+
+3: Branches
+    (1): git checkout -b new-feature
+        --> Create a new branch
+    (2): Make some changes in the code(in this branch)
+    (3): git add .
+    (4): git commit -m "New feature on new branch"
+    (5): git checkout master
+        --> Switch to master. And we can know that the new changes in the new feature branch did not effect the master branch
+    (6): delete one file 
+    (7): git checkout new-feature
+    (8): git log --oneline --all --graph
+        --> The reason of this new feature branch is one commit ahead of the master branch, because if we are comparing with the 
+            master branch, this one commit in the new feature branch does not exist on the master branch
+    (9): git checkout -b extended
+        --> Create a new branch on the new feature branch
+    (10): Make some changes
+    (11): git add .
+    (12): git commit -m "Make some changes"
+    (13): git checkout new-branch
+        --> Nothing will happen in this branch
+    (14): git checkout master
+    (15): git checkout extended
+    (16): git branch
+        --> View all the Branches
+
+4: Merging branch
+    (1): git checkout master
+    (2): git merge extended
+        --> Take all the work from the extended branch and overlaid onto the master branch
+
+5: Merge Conflict
+
+6: Git remote repository 
+    Create a new repository in the Github
+    (1): git branch -M main
+        --> Change the name of master to main
+    (2): git remote add origin https://github.com/zhah.../Test.git
+    (3): git remote
+    (4): git push -u origin main
+        --> Put the local code to the remote repository
+    (5): Go to Github to verify
+    (6): git checkout extended
+    (7): git push origin extended
+        --> Push another branch to the origin
+    
+    (8): Add README in the Github
+    (9): git checkout main
+        --> We can see that "Your branch is up to date with "origin/main""
+    (10): git pull
+        --> it will update the local branch 
+    (11): 
+
+
+
+1: Clone the Project
+2: Check the projects workflow in the github(to do, in progress, done)
+2: Then create a new branch to work with the project git branch name
+3: code .
+4: And when we done the projects, git status (We have modified the file)
+5: git add filename
+6: git commit -m "...."
+    --> Now these changes have been saved in my local repository, now we need to save it on the github
+7: git push -u origin + branch name
+    --> So now it will upload all the changes to the github
+8: go to github to check the branches, we can see the branch we upload just now
+9: git pull origin master   
+    --> To bring all the changes that have been made in master, and we wanna bring these changes to our branch
+10: In github on my branch we upload just new, we have to create new pull request, add some description and if we do not have
+    Conflicts or after we solve the Conflicts --> "Merge pull request" --> "confirm merge", when we done everything
+11: Go to master branch, we can see the uploads have changed, and we can go to move the category of this project from "in progress"
+    to "done"
+12: In the terminal, git check master
+14: git pull    
+    --> Fetch all the changes and update master with these changes (We can see the details about the changes)
+15: git branch -D branch name
+    --> Delete the branch we created for that project, but it is deleted in my local repository, this has not been deleted from
+        the remote repository -- We can check in the github
+
+
+
+What if we got a Conflict?
+1: git checkout branch name
+    --> Create a new branch to work with another project in the "in process" category
+2: code .
+    --> Work with the project
+3: git add .
+4: git commit -m ""
+5: git push -u origin branch name
+7: go to github to check this new branch, and then "Compare & pull request", but we can not do a pull request, because we 
+    have Conflict this time, we have to solve this Conflict now, 
+8: git pull origin master
+    --> Bring all the changes on the github repository, and we will get a Conflict
+9: check it in the VSCode and solve it
+10: git add .
+11: git commit -m "" 
+12: git push
+13: go to github and we can merge pull request now, and click "code" to check
+14: in the terminal: git checkout master
+15: git pull
+    --> To see the details about the changes
+16: git branch -D branch name
+
+
+
+What if we find a bug when we have merged the branches?
+1: Undo the changes: git revert..., then push these changes back into the main branch
+2: get rid of the history of the existence of that commit itself: git reset, git rebase -i, 
+
+
+(Create the new project folder first and then connect with a new remote repository)
