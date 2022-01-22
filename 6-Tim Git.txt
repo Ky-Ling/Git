@@ -123,3 +123,13 @@ What if we find a bug when we have merged the branches?
 
 
 (Create the new project folder first and then connect with a new remote repository)
+
+
+
+
+
+1: git init
+2: git add .
+3: git commit -m "..."
+4: git remote add origin "URL"
+5: git push -u origin main(change the branch name: git branch -m master main)
